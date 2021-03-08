@@ -9,7 +9,9 @@ public class ChickenPlayer : MonoBehaviour
     Rigidbody m_Rigidbody;
     float m_SidewaysSpeed;
     float m_UpwardsForce;
-    bool isGrounded;
+    float m_AirJumpForce;
+    int m_MaxJumps;
+    int jumpsAvailable;
 
     void Start()
     {
@@ -17,12 +19,14 @@ public class ChickenPlayer : MonoBehaviour
         m_Rigidbody = GetComponent<Rigidbody>();
         // Set the speed of the GameObject
         m_SidewaysSpeed = 5.0f;
-        m_UpwardsForce = 2.5f;
+        m_UpwardsForce = 5.0f;
+        m_AirJumpForce = 1.0f;
+        m_MaxJumps = 2;
     }
 
     void OnCollisionStay()
     {
-        isGrounded = true;
+        jumpsAvailable = m_MaxJumps;
     }
 
     void Update()
@@ -37,10 +41,18 @@ public class ChickenPlayer : MonoBehaviour
             transform.Translate(0, 0, -Time.deltaTime * m_SidewaysSpeed, Space.World);
         }
 
-        if ((Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow)) && isGrounded)
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow)))
         {
-            m_Rigidbody.AddForce(transform.up * m_UpwardsForce, ForceMode.Impulse);
-            isGrounded = false;
-	}
+            if (jumpsAvailable == m_MaxJumps)
+            {
+                m_Rigidbody.AddForce(transform.up * m_UpwardsForce, ForceMode.Impulse);
+                jumpsAvailable--;
+            }
+            else if (jumpsAvailable > 0)
+            {
+                m_Rigidbody.AddForce(transform.up * m_AirJumpForce, ForceMode.Impulse);
+                jumpsAvailable--;
+            }
+        }
     }
 }
